@@ -1,0 +1,18 @@
+for (i = 1; i <= 10; i = i + 1) {
+    sum = sum + i;
+}
+
+for ( ; i <= 10; ) {
+    sum = sum + i;
+}
+
+for (i = 0; ; i = i + 1) {
+    sum = sum + i;
+}
+
+for (;;) {
+    // pętla nieskończona
+}
+
+if (x > 5) { /* coś */ };
+if (x > 5) { /* coś */ } else { /* coś innego */ }

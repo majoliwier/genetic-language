@@ -4,9 +4,6 @@ import random
 import json
 import copy
 
-from gen.MiniLangLexer import MiniLangLexer
-from gen.MiniLangParser import MiniLangParser
-
 
 @dataclass
 class Node:
@@ -28,7 +25,7 @@ class MiniLangGP:
             'comparison': ['==', '!=', '<', '>', '<=', '>='],
             'logical': ['&&', '||']
         }
-        self.statement_types = ['assign', 'while', 'if', 'io']
+        self.statement_types = ['assign', 'while', 'if', 'io', 'break', 'continue']
 
     def generate_random_program(self, depth: int = 0) -> Node:
         block = Node('block', '{')
@@ -49,8 +46,14 @@ class MiniLangGP:
             return self.generate_while(depth)
         elif statement_type == 'if':
             return self.generate_if(depth)
-        else:  # io
+        elif statement_type == 'io':
             return self.generate_io(depth)
+        elif statement_type == 'break':
+            return self.generate_break(depth)
+        elif statement_type == 'continue':
+            return self.generate_continue(depth)
+        else:
+            return self.generate_assignment(depth)
 
     def generate_assignment(self, depth: int) -> Node:
         node = Node('assign', '=')
@@ -75,7 +78,6 @@ class MiniLangGP:
             self.generate_random_program(depth + 1)
         ]
 
-        # Optionally add else block
         if random.random() < 0.5:
             else_block = self.generate_random_program(depth + 1)
             node.children.append(else_block)
@@ -91,11 +93,21 @@ class MiniLangGP:
             node.children = [self.generate_expression(depth + 1)]
         return node
 
+    def generate_break(self, depth: int) -> Node:
+        return Node('break', 'break')
+
+    def generate_continue(self, depth: int) -> Node:
+        return Node('continue', 'continue')
+
     def generate_expression(self, depth: int) -> Node:
         if depth >= self.max_depth or random.random() < 0.3:
-            if random.random() < 0.5:
-                return Node('number', str(random.randint(0, 100)))
-            return Node('id', f'var_{random.randint(0, 5)}')
+            choice = random.random()
+            if choice < 0.33:
+                return Node('int', str(random.randint(0, 100)))
+            elif choice < 0.66:
+                return Node('float', f"{random.uniform(0, 100):.2f}")
+            else:
+                return Node('id', f'var_{random.randint(0, 5)}')
 
         expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
         node = Node('expression', random.choice(self.operators[expr_type]))
@@ -118,7 +130,9 @@ class MiniLangGP:
         node1 = random.choice(nodes1)
         node2 = random.choice(nodes2)
 
-        node1.children, node2.children = node2.children, node1.children
+        node1_children_backup = node1.children
+        node1.type, node1.value, node1.children = node2.type, node2.value, node2.children
+        node2.type, node2.value, node2.children = node1.type, node1.value, node1_children_backup
 
         return offspring1, offspring2
 
@@ -131,13 +145,20 @@ class MiniLangGP:
 
         node = random.choice(nodes)
 
-        if node.type == 'number':
+        if node.type == 'int':
             node.value = str(random.randint(0, 100))
+        elif node.type == 'float':
+            node.value = f"{random.uniform(0, 100):.2f}"
         elif node.type == 'id':
             node.value = f'var_{random.randint(0, 5)}'
         elif node.type == 'expression':
             expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
             node.value = random.choice(self.operators[expr_type])
+        elif node.type == 'assign':
+            node.children[1] = self.generate_expression(0)
+        elif node.type in ['break', 'continue']:
+            node.type = 'break' if node.type == 'continue' else 'continue'
+            node.value = node.type
 
         return mutated
 
@@ -150,7 +171,6 @@ class MiniLangGP:
     def replace_worst_individual(self, population: List[Node],
                                  new_individual: Node,
                                  fitness_func: Callable[[Node], float]) -> List[Node]:
-        # Find and replace the worst individual with the new one if it's better
         fitness_scores = [fitness_func(prog) for prog in population]
         worst_index = fitness_scores.index(min(fitness_scores))
         new_fitness = fitness_func(new_individual)
@@ -182,5 +202,5 @@ class MiniLangGP:
 
     def _from_dict(self, data: dict) -> Node:
         node = Node(data['type'], data['value'])
-        node.children = [self._from_dict(child) for child in data['children']]
+        node.children = [self._from_dict(child) for child in data.get('children', [])]
         return node

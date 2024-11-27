@@ -13,6 +13,12 @@ statement
     | whileStatement
     | ifStatement
     | ioStatement
+    | breakStatement
+    | continueStatement
+    ;
+
+assignStatement
+    : ID '=' expression ';'
     ;
 
 whileStatement
@@ -23,13 +29,17 @@ ifStatement
     : IF '(' expression ')' block (ELSE block)?
     ;
 
-assignStatement
-    : ID '=' expression ';'
-    ;
-
 ioStatement
     : INPUT '(' ID ')' ';'
     | OUTPUT '(' expression ')' ';'
+    ;
+
+breakStatement
+    : BREAK ';'
+    ;
+
+continueStatement
+    : CONTINUE ';'
     ;
 
 expression
@@ -39,15 +49,26 @@ expression
     | expression ('&&' | '||') expression
     | '(' expression ')'
     | ID
-    | NUMBER
+    | INT
+    | FLOAT
     ;
 
-// Tokens
-WHILE : 'while';
-IF : 'if';
-ELSE : 'else';
-INPUT : 'input';
-OUTPUT : 'output';
-ID : [a-zA-Z_][a-zA-Z_0-9]*;
-NUMBER : [0-9]+;
-WS : [ \t\r\n]+ -> skip;
+WHILE    : 'while';
+IF       : 'if';
+ELSE     : 'else';
+BREAK    : 'break';
+CONTINUE : 'continue';
+INPUT    : 'input';
+OUTPUT   : 'output';
+
+FLOAT
+    : [0-9]+ '.' [0-9]* ([eE][+-]? [0-9]+)?
+    | '.' [0-9]+ ([eE][+-]? [0-9]+)?
+    | [0-9]+ ([eE][+-]? [0-9]+)
+    ;
+
+INT      : [0-9]+;
+
+ID       : [a-zA-Z_][a-zA-Z_0-9]*;
+
+WS       : [ \t\r\n]+ -> skip;

@@ -1,7 +1,8 @@
 from minilang_gp import MiniLangGP
 import random
 
-#ocena fitess na razie randomowa
+
+# ocena fitess na razie randomowa
 def example_fitness_function(program: 'Node') -> float:
     return random.random()
 

@@ -1,31 +1,14 @@
-from minilang_gp import MiniLangGP
+from minilang_gp import MiniLangGP, generate_code, example_fitness_function
 import random
 
-
-# ocena fitess na razie randomowa
-def example_fitness_function(program: 'Node') -> float:
-    return random.random()
-
-
-def print_program(node: 'Node', indent: int = 0) -> None:
-    indent_str = "  " * indent
-    print(f"{indent_str}{node.type}: {node.value}")
-    for child in node.children:
-        print_program(child, indent + 1)
-
-
 def main():
-    gp = MiniLangGP(max_depth=5, min_depth=2)
+    gp = MiniLangGP(max_depth=3, min_depth=1)
 
     population_size = 100
     generations = 100
     tournament_size = 2
 
     population = [gp.generate_random_program() for _ in range(population_size)]
-
-    # program zapisany jako json
-    # serial_program = gp.serialize(population[0])
-    # print(serial_program)
 
     print("\nPrzykład ewolucji:")
     for generation in range(generations):
@@ -38,7 +21,7 @@ def main():
         print(f"Najlepsze przystosowanie: {best_fitness:.4f}")
         print(f"Średnie przystosowanie: {avg_fitness:.4f}")
         print("Najlepszy program:")
-        print_program(max(population, key=example_fitness_function))
+        print(generate_code(max(population, key=example_fitness_function)))
 
         new_population = []
 
@@ -46,15 +29,14 @@ def main():
             parent1 = gp.tournament_selection(population, example_fitness_function, tournament_size)
             parent2 = gp.tournament_selection(population, example_fitness_function, tournament_size)
 
-            if random.random() < 0.8:
+            chances = random.random()
+            if chances < 0.2:
+                offspring1 = gp.mutate(parent1)
+                offspring2 = gp.mutate(parent2)
+            elif chances < 0.8:
                 offspring1, offspring2 = gp.crossover(parent1, parent2)
             else:
                 offspring1, offspring2 = parent1, parent2
-
-            if random.random() < 0.1:
-                offspring1 = gp.mutate(offspring1)
-            if random.random() < 0.1:
-                offspring2 = gp.mutate(offspring2)
 
             new_population.extend([offspring1, offspring2])
 
@@ -70,7 +52,7 @@ def main():
 
     best_program = max(population, key=example_fitness_function)
     print("\nNajlepszy znaleziony program:")
-    print_program(best_program)
+    print(generate_code(best_program))
 
 
 if __name__ == "__main__":

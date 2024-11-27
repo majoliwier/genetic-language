@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Callable
+from typing import List, Tuple, Callable, Optional
 import random
 import json
 import copy
@@ -21,24 +21,27 @@ class MiniLangGP:
         self.max_depth = max_depth
         self.min_depth = min_depth
         self.operators = {
-            'arithmetic': ['+', '-', '*', '/'],
+            'arithmetic': ['*', '/', '%', '+', '-'],
             'comparison': ['==', '!=', '<', '>', '<=', '>='],
             'logical': ['&&', '||']
         }
         self.statement_types = ['assign', 'while', 'if', 'io', 'break', 'continue']
+        self.variables = [f'var_{i}' for i in range(6)]
 
     def generate_random_program(self, depth: int = 0) -> Node:
-        block = Node('block', '{')
-        num_statements = random.randint(1, 4)
+        program = Node('program', '')
+        num_statements = random.randint(3, 6)
         for _ in range(num_statements):
-            block.children.append(self.generate_random_statement(depth + 1))
-        return block
+            program.children.append(self.generate_random_statement(depth + 1))
+        return program
 
     def generate_random_statement(self, depth: int) -> Node:
         if depth >= self.max_depth:
             return self.generate_assignment(depth)
-
-        statement_type = random.choice(self.statement_types)
+        elif depth < self.min_depth:
+            statement_type = random.choice(['while', 'if'])
+        else:
+            statement_type = random.choice(self.statement_types)
 
         if statement_type == 'assign':
             return self.generate_assignment(depth)
@@ -49,73 +52,91 @@ class MiniLangGP:
         elif statement_type == 'io':
             return self.generate_io(depth)
         elif statement_type == 'break':
-            return self.generate_break(depth)
+            return Node('breakStatement', 'break')
         elif statement_type == 'continue':
-            return self.generate_continue(depth)
+            return Node('continueStatement', 'continue')
         else:
             return self.generate_assignment(depth)
 
     def generate_assignment(self, depth: int) -> Node:
-        node = Node('assign', '=')
+        node = Node('assignStatement', '=')
         node.children = [
-            Node('id', f'var_{random.randint(0, 5)}'),
+            Node('ID', random.choice(self.variables)),
             self.generate_expression(depth + 1)
         ]
         return node
 
     def generate_while(self, depth: int) -> Node:
-        node = Node('while', 'while')
+        node = Node('whileStatement', 'while')
         node.children = [
             self.generate_expression(depth + 1),
-            self.generate_random_program(depth + 1)
+            self.generate_block(depth + 1)
         ]
         return node
 
+    def generate_block(self, depth: int) -> Node:
+        block = Node('block', '{')
+        num_statements = random.randint(1, 3)
+        for _ in range(num_statements):
+            block.children.append(self.generate_random_statement(depth))
+        return block
+
     def generate_if(self, depth: int) -> Node:
-        node = Node('if', 'if')
+        node = Node('ifStatement', 'if')
         node.children = [
             self.generate_expression(depth + 1),
-            self.generate_random_program(depth + 1)
+            self.generate_block(depth + 1)
         ]
 
         if random.random() < 0.5:
-            else_block = self.generate_random_program(depth + 1)
+            else_block = self.generate_block(depth + 1)
             node.children.append(else_block)
 
         return node
 
     def generate_io(self, depth: int) -> Node:
         io_type = random.choice(['input', 'output'])
-        node = Node('io', io_type)
+        node = Node('ioStatement', io_type)
         if io_type == 'input':
-            node.children = [Node('id', f'var_{random.randint(0, 5)}')]
+            node.children = [Node('ID', random.choice(self.variables))]
         else:
             node.children = [self.generate_expression(depth + 1)]
         return node
 
-    def generate_break(self, depth: int) -> Node:
-        return Node('break', 'break')
-
-    def generate_continue(self, depth: int) -> Node:
-        return Node('continue', 'continue')
-
     def generate_expression(self, depth: int) -> Node:
-        if depth >= self.max_depth or random.random() < 0.3:
+        if depth >= self.max_depth:
             choice = random.random()
             if choice < 0.33:
-                return Node('int', str(random.randint(0, 100)))
+                return Node('INT', str(random.randint(0, 100)))
             elif choice < 0.66:
-                return Node('float', f"{random.uniform(0, 100):.2f}")
+                return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
             else:
-                return Node('id', f'var_{random.randint(0, 5)}')
-
-        expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
-        node = Node('expression', random.choice(self.operators[expr_type]))
-        node.children = [
-            self.generate_expression(depth + 1),
-            self.generate_expression(depth + 1)
-        ]
-        return node
+                return Node('ID', random.choice(self.variables))
+        elif depth < self.min_depth:
+            expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
+            node = Node('expression', random.choice(self.operators[expr_type]))
+            node.children = [
+                self.generate_expression(depth + 1),
+                self.generate_expression(depth + 1)
+            ]
+            return node
+        else:
+            if random.random() < 0.5:
+                expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
+                node = Node('expression', random.choice(self.operators[expr_type]))
+                node.children = [
+                    self.generate_expression(depth + 1),
+                    self.generate_expression(depth + 1)
+                ]
+                return node
+            else:
+                choice = random.random()
+                if choice < 0.33:
+                    return Node('INT', str(random.randint(0, 100)))
+                elif choice < 0.66:
+                    return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
+                else:
+                    return Node('ID', random.choice(self.variables))
 
     def crossover(self, parent1: Node, parent2: Node) -> Tuple[Node, Node]:
         offspring1 = copy.deepcopy(parent1)
@@ -124,17 +145,39 @@ class MiniLangGP:
         nodes1 = self._get_all_nodes(offspring1)
         nodes2 = self._get_all_nodes(offspring2)
 
-        if not nodes1 or not nodes2:
+        # te same typy wezlow
+        common_types = set(node.type for node in nodes1) & set(node.type for node in nodes2)
+        if not common_types:
             return offspring1, offspring2
 
-        node1 = random.choice(nodes1)
-        node2 = random.choice(nodes2)
+        selected_type = random.choice(list(common_types))
+        nodes1_same_type = [node for node in nodes1 if node.type == selected_type]
+        nodes2_same_type = [node for node in nodes2 if node.type == selected_type]
 
-        node1_children_backup = node1.children
-        node1.type, node1.value, node1.children = node2.type, node2.value, node2.children
-        node2.type, node2.value, node2.children = node1.type, node1.value, node1_children_backup
+        if not nodes1_same_type or not nodes2_same_type:
+            return offspring1, offspring2
+
+        node1 = random.choice(nodes1_same_type)
+        node2 = random.choice(nodes2_same_type)
+
+        parent1_node1, index1 = self._find_parent(offspring1, node1)
+        parent2_node2, index2 = self._find_parent(offspring2, node2)
+
+        if parent1_node1 is None or parent2_node2 is None:
+            return offspring1, offspring2
+
+        parent1_node1.children[index1], parent2_node2.children[index2] = parent2_node2.children[index2], parent1_node1.children[index1]
 
         return offspring1, offspring2
+
+    def _find_parent(self, node: Node, target: Node) -> Tuple[Optional[Node], int]:
+        for i, child in enumerate(node.children):
+            if child is target:
+                return node, i
+            result = self._find_parent(child, target)
+            if result[0] is not None:
+                return result
+        return None, -1
 
     def mutate(self, program: Node) -> Node:
         mutated = copy.deepcopy(program)
@@ -145,47 +188,45 @@ class MiniLangGP:
 
         node = random.choice(nodes)
 
-        if node.type == 'int':
+        if node.type == 'INT':
             node.value = str(random.randint(0, 100))
-        elif node.type == 'float':
+        elif node.type == 'FLOAT':
             node.value = f"{random.uniform(0, 100):.2f}"
-        elif node.type == 'id':
-            node.value = f'var_{random.randint(0, 5)}'
+        elif node.type == 'ID':
+            node.value = random.choice(self.variables)
         elif node.type == 'expression':
-            expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
-            node.value = random.choice(self.operators[expr_type])
-        elif node.type == 'assign':
-            node.children[1] = self.generate_expression(0)
-        elif node.type in ['break', 'continue']:
-            node.type = 'break' if node.type == 'continue' else 'continue'
-            node.value = node.type
+            if len(node.children) == 2:
+                mutation_choice = random.choice(['operator', 'left', 'right'])
+                if mutation_choice == 'operator':
+                    expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
+                    node.value = random.choice(self.operators[expr_type])
+                elif mutation_choice == 'left':
+                    node.children[0] = self.generate_expression(0)
+                elif mutation_choice == 'right':
+                    node.children[1] = self.generate_expression(0)
+            # zabezpieczenie jak wczesniej mutate i crossover zle tworzyly drzewa
+            # else:
+            #     new_expr = self.generate_expression(0)
+            #     node.type = new_expr.type
+            #     node.value = new_expr.value
+            #     node.children = new_expr.children
+        elif node.type == 'assignStatement':
+            if len(node.children) >= 2:
+                node.children[1] = self.generate_expression(0)
+            # zabezpieczenie jak wczesniej mutate i crossover zle tworzyly drzewa
+            # else:
+            #     node.children = [
+            #         Node('ID', random.choice(self.variables)),
+            #         self.generate_expression(0)
+            #     ]
+        elif node.type in ['breakStatement', 'continueStatement']:
+            pass
 
         return mutated
 
-    def tournament_selection(self, population: List[Node],
-                             fitness_func: Callable[[Node], float],
-                             tournament_size: int) -> Node:
+    def tournament_selection(self, population: List[Node],fitness_func: Callable[[Node], float], tournament_size: int) -> Node:
         tournament = random.sample(population, tournament_size)
         return max(tournament, key=fitness_func)
-
-    def replace_worst_individual(self, population: List[Node],
-                                 new_individual: Node,
-                                 fitness_func: Callable[[Node], float]) -> List[Node]:
-        fitness_scores = [fitness_func(prog) for prog in population]
-        worst_index = fitness_scores.index(min(fitness_scores))
-        new_fitness = fitness_func(new_individual)
-
-        if new_fitness > fitness_scores[worst_index]:
-            population[worst_index] = new_individual
-
-        return population
-
-    def serialize(self, program: Node) -> str:
-        return json.dumps(self._to_dict(program))
-
-    def deserialize(self, serial_data: str) -> Node:
-        data = json.loads(serial_data)
-        return self._from_dict(data)
 
     def _get_all_nodes(self, node: Node) -> List[Node]:
         nodes = [node]
@@ -204,3 +245,84 @@ class MiniLangGP:
         node = Node(data['type'], data['value'])
         node.children = [self._from_dict(child) for child in data.get('children', [])]
         return node
+
+    def serialize(self, program: Node) -> str:
+        return json.dumps(self._to_dict(program))
+
+    def deserialize(self, serial_data: str) -> Node:
+        data = json.loads(serial_data)
+        return self._from_dict(data)
+
+def generate_code(node: 'Node', indent: int = 0) -> str:
+    if node is None:
+        return ""
+
+    indent_str = " " * indent
+    code = ""
+
+    all_operators = {'*', '/', '%', '+', '-', '==', '!=', '<', '>', '<=', '>=', '&&', '||'}
+
+    if node.type == 'program':
+        for child in node.children:
+            code += generate_code(child, indent)
+    elif node.type == 'block':
+        code += indent_str + "{\n"
+        for child in node.children:
+            code += generate_code(child, indent + 1)
+        code += indent_str + "}"
+    elif node.type == 'assignStatement':
+        if len(node.children) >= 2:
+            lhs = generate_code(node.children[0])
+            rhs = generate_code(node.children[1])
+            code += indent_str + f"{lhs} = {rhs};\n"
+    elif node.type == 'whileStatement':
+        if len(node.children) >= 2:
+            condition = generate_code(node.children[0])
+            body = generate_code(node.children[1], indent)
+            code += indent_str + f"while ({condition}) {body}\n"
+    elif node.type == 'ifStatement':
+        if len(node.children) >= 2:
+            condition = generate_code(node.children[0])
+            if_body = generate_code(node.children[1], indent)
+            code += indent_str + f"if ({condition}) {if_body}\n"
+            if len(node.children) > 2:
+                else_body = generate_code(node.children[2], indent)
+                code += indent_str + f"else {else_body}\n"
+    elif node.type == 'ioStatement':
+        if node.value == 'input' and node.children:
+            var_name = generate_code(node.children[0])
+            code += indent_str + f"input({var_name});\n"
+        elif node.value == 'output' and node.children:
+            expr = generate_code(node.children[0])
+            code += indent_str + f"output({expr});\n"
+    elif node.type == 'breakStatement':
+        code += indent_str + "break;\n"
+    elif node.type == 'continueStatement':
+        code += indent_str + "continue;\n"
+    elif node.type == 'expression':
+        if len(node.children) == 2:
+            left = generate_code(node.children[0])
+            right = generate_code(node.children[1])
+            code += f"({left} {node.value} {right})"
+        elif len(node.children) == 1:
+            child_code = generate_code(node.children[0])
+            code += f"({node.value}{child_code})"
+        else:
+            if node.value in all_operators:
+                code += "0"
+            else:
+                code += node.value
+    elif node.type in ['INT', 'FLOAT', 'ID']:
+        code += node.value
+
+    return code
+
+# ocena fitess na razie randomowa
+def example_fitness_function(program: 'Node') -> float:
+    return random.random()
+
+# def print_program(node: 'Node', indent: int = 0) -> None:
+#     indent_str = "  " * indent
+#     print(f"{indent_str}{node.type}: {node.value}")
+#     for child in node.children:
+#         print_program(child, indent + 1)

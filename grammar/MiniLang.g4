@@ -1,7 +1,7 @@
 grammar MiniLang;
 
 program
-    : block EOF
+    : statement* EOF
     ;
 
 block

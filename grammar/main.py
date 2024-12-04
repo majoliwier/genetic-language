@@ -2,7 +2,7 @@ from minilang_gp import MiniLangGP, generate_code, example_fitness_function
 import random
 
 def main():
-    gp = MiniLangGP(max_depth=3, min_depth=1)
+    gp = MiniLangGP(max_depth=3)
 
     population_size = 100
     generations = 100

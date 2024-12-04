@@ -4,7 +4,6 @@ import random
 import json
 import copy
 
-
 @dataclass
 class Node:
     type: str
@@ -15,18 +14,31 @@ class Node:
         if self.children is None:
             self.children = []
 
-
 class MiniLangGP:
-    def __init__(self, max_depth: int = 5, min_depth: int = 2):
+    def __init__(self, max_depth: int = 5):
         self.max_depth = max_depth
-        self.min_depth = min_depth
         self.operators = {
-            'arithmetic': ['*', '/', '%', '+', '-'],
+            'arithmetic': ['*', '/', '+', '-'],
             'comparison': ['==', '!=', '<', '>', '<=', '>='],
             'logical': ['&&', '||']
         }
-        self.statement_types = ['assign', 'while', 'if', 'io', 'break', 'continue']
-        self.variables = [f'var_{i}' for i in range(6)]
+        self.statement_types = ['assign', 'while', 'if', 'io']
+        self.loop_if_statement_types = self.statement_types + ['break', 'continue']
+        self.variables = [f'var_{i}' for i in range(10)]
+
+    def required_depth_for_statement(self, statement_type: str) -> int:
+        if statement_type == 'assign':
+            return 0
+        elif statement_type in ['if', 'while']:
+            return 2
+        elif statement_type == 'block':
+            return 1
+        elif statement_type == 'io':
+            return 0
+        elif statement_type in ['break', 'continue']:
+            return 0
+        else:
+            return 1
 
     def generate_random_program(self, depth: int = 0) -> Node:
         program = Node('program', '')
@@ -36,12 +48,39 @@ class MiniLangGP:
         return program
 
     def generate_random_statement(self, depth: int) -> Node:
-        if depth >= self.max_depth:
+        possible_statements = []
+        for st in self.statement_types:
+            required_depth = self.required_depth_for_statement(st)
+            if depth + required_depth <= self.max_depth:
+                possible_statements.append(st)
+
+        if not possible_statements:
             return self.generate_assignment(depth)
-        elif depth < self.min_depth:
-            statement_type = random.choice(['while', 'if'])
-        else:
-            statement_type = random.choice(self.statement_types)
+
+
+
+        statement_type = random.choice(possible_statements)
+
+        if statement_type == 'assign':
+            return self.generate_assignment(depth)
+        elif statement_type == 'while':
+            return self.generate_while(depth)
+        elif statement_type == 'if':
+            return self.generate_if(depth)
+        elif statement_type == 'io':
+            return self.generate_io(depth)
+
+    def generate_loop_if_statement(self, depth: int) -> Node:
+        possible_statements = []
+        for st in self.loop_if_statement_types:
+            required_depth = self.required_depth_for_statement(st)
+            if depth + required_depth <= self.max_depth:
+                possible_statements.append(st)
+
+        if not possible_statements:
+            return self.generate_assignment(depth)
+
+        statement_type = random.choice(possible_statements)
 
         if statement_type == 'assign':
             return self.generate_assignment(depth)
@@ -55,8 +94,6 @@ class MiniLangGP:
             return Node('breakStatement', 'break')
         elif statement_type == 'continue':
             return Node('continueStatement', 'continue')
-        else:
-            return self.generate_assignment(depth)
 
     def generate_assignment(self, depth: int) -> Node:
         node = Node('assignStatement', '=')
@@ -78,7 +115,7 @@ class MiniLangGP:
         block = Node('block', '{')
         num_statements = random.randint(1, 3)
         for _ in range(num_statements):
-            block.children.append(self.generate_random_statement(depth))
+            block.children.append(self.generate_loop_if_statement(depth + 1))
         return block
 
     def generate_if(self, depth: int) -> Node:
@@ -104,7 +141,7 @@ class MiniLangGP:
         return node
 
     def generate_expression(self, depth: int) -> Node:
-        if depth >= self.max_depth:
+        if depth >= self.max_depth or (random.random() < 0.5):
             choice = random.random()
             if choice < 0.33:
                 return Node('INT', str(random.randint(0, 100)))
@@ -112,7 +149,7 @@ class MiniLangGP:
                 return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
             else:
                 return Node('ID', random.choice(self.variables))
-        elif depth < self.min_depth:
+        else:
             expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
             node = Node('expression', random.choice(self.operators[expr_type]))
             node.children = [
@@ -120,23 +157,6 @@ class MiniLangGP:
                 self.generate_expression(depth + 1)
             ]
             return node
-        else:
-            if random.random() < 0.5:
-                expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
-                node = Node('expression', random.choice(self.operators[expr_type]))
-                node.children = [
-                    self.generate_expression(depth + 1),
-                    self.generate_expression(depth + 1)
-                ]
-                return node
-            else:
-                choice = random.random()
-                if choice < 0.33:
-                    return Node('INT', str(random.randint(0, 100)))
-                elif choice < 0.66:
-                    return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
-                else:
-                    return Node('ID', random.choice(self.variables))
 
     def crossover(self, parent1: Node, parent2: Node) -> Tuple[Node, Node]:
         offspring1 = copy.deepcopy(parent1)
@@ -145,7 +165,6 @@ class MiniLangGP:
         nodes1 = self._get_all_nodes(offspring1)
         nodes2 = self._get_all_nodes(offspring2)
 
-        # te same typy wezlow
         common_types = set(node.type for node in nodes1) & set(node.type for node in nodes2)
         if not common_types:
             return offspring1, offspring2
@@ -204,21 +223,9 @@ class MiniLangGP:
                     node.children[0] = self.generate_expression(0)
                 elif mutation_choice == 'right':
                     node.children[1] = self.generate_expression(0)
-            # zabezpieczenie jak wczesniej mutate i crossover zle tworzyly drzewa
-            # else:
-            #     new_expr = self.generate_expression(0)
-            #     node.type = new_expr.type
-            #     node.value = new_expr.value
-            #     node.children = new_expr.children
         elif node.type == 'assignStatement':
             if len(node.children) >= 2:
                 node.children[1] = self.generate_expression(0)
-            # zabezpieczenie jak wczesniej mutate i crossover zle tworzyly drzewa
-            # else:
-            #     node.children = [
-            #         Node('ID', random.choice(self.variables)),
-            #         self.generate_expression(0)
-            #     ]
         elif node.type in ['breakStatement', 'continueStatement']:
             pass
 
@@ -268,8 +275,8 @@ def generate_code(node: 'Node', indent: int = 0) -> str:
     elif node.type == 'block':
         code += indent_str + "{\n"
         for child in node.children:
-            code += generate_code(child, indent + 1)
-        code += indent_str + "}"
+            code += generate_code(child, indent + 2)
+        code += indent_str + "}\n"
     elif node.type == 'assignStatement':
         if len(node.children) >= 2:
             lhs = generate_code(node.children[0])
@@ -284,10 +291,10 @@ def generate_code(node: 'Node', indent: int = 0) -> str:
         if len(node.children) >= 2:
             condition = generate_code(node.children[0])
             if_body = generate_code(node.children[1], indent)
-            code += indent_str + f"if ({condition}) {if_body}\n"
+            code += indent_str + f"if ({condition}) {if_body}"
             if len(node.children) > 2:
                 else_body = generate_code(node.children[2], indent)
-                code += indent_str + f"else {else_body}\n"
+                code += indent_str + f"else {else_body}"
     elif node.type == 'ioStatement':
         if node.value == 'input' and node.children:
             var_name = generate_code(node.children[0])
@@ -308,21 +315,11 @@ def generate_code(node: 'Node', indent: int = 0) -> str:
             child_code = generate_code(node.children[0])
             code += f"({node.value}{child_code})"
         else:
-            if node.value in all_operators:
-                code += "0"
-            else:
-                code += node.value
+            code += node.value if node.value not in all_operators else "0"
     elif node.type in ['INT', 'FLOAT', 'ID']:
         code += node.value
 
     return code
 
-# ocena fitess na razie randomowa
 def example_fitness_function(program: 'Node') -> float:
     return random.random()
-
-# def print_program(node: 'Node', indent: int = 0) -> None:
-#     indent_str = "  " * indent
-#     print(f"{indent_str}{node.type}: {node.value}")
-#     for child in node.children:
-#         print_program(child, indent + 1)

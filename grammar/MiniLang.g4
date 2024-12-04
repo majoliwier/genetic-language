@@ -5,7 +5,7 @@ program
     ;
 
 block
-    : '{' statement* '}'
+    : '{' loopIfStatement* '}'
     ;
 
 statement
@@ -13,8 +13,6 @@ statement
     | whileStatement
     | ifStatement
     | ioStatement
-    | breakStatement
-    | continueStatement
     ;
 
 assignStatement
@@ -23,6 +21,15 @@ assignStatement
 
 whileStatement
     : WHILE '(' expression ')' block
+    ;
+
+loopIfStatement
+    : assignStatement
+    | whileStatement
+    | ifStatement
+    | ioStatement
+    | breakStatement
+    | continueStatement
     ;
 
 ifStatement
@@ -41,9 +48,8 @@ breakStatement
 continueStatement
     : CONTINUE ';'
     ;
-
 expression
-    : expression ('*' | '/' | '%') expression
+    : expression ('*' | '/') expression
     | expression ('+' | '-') expression
     | expression ('==' | '!=' | '<' | '>' | '<=' | '>=') expression
     | expression ('&&' | '||') expression
@@ -62,12 +68,10 @@ INPUT    : 'input';
 OUTPUT   : 'output';
 
 FLOAT
-    : [0-9]+ '.' [0-9]* ([eE][+-]? [0-9]+)?
-    | '.' [0-9]+ ([eE][+-]? [0-9]+)?
-    | [0-9]+ ([eE][+-]? [0-9]+)
+    : '-'? [0-9]+ '.' [0-9]*
     ;
 
-INT      : [0-9]+;
+INT      : '-'? [0-9]+;
 
 ID       : [a-zA-Z_][a-zA-Z_0-9]*;
 

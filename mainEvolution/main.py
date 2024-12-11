@@ -1,4 +1,4 @@
-from minilang_gp import MiniLangGP, generate_code, example_fitness_function
+from AST.minilang_gp import MiniLangGP, generate_code, example_fitness_function
 import random
 
 def main():

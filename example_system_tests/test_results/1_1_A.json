@@ -1,0 +1,13 @@
+{
+    "task_name": "1.1.A",
+    "best_program": "output((var_6 >= (87 && ((76 != (40.32 || (((79 == 33.74) != 7) / 55))) == 94.10))));\noutput((41 * 93.16));\noutput(34);\nvar_6 = ((92.03 / (43 && 58)) >= 41);\n",
+    "fitness_score": 1.0,
+    "generation_found": 1,
+    "generations": [
+        {
+            "generation": 1,
+            "best_fitness": 1.0,
+            "average_fitness": 0.22
+        }
+    ]
+}

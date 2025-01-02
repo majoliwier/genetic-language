@@ -57,8 +57,6 @@ class MiniLangGP:
         if not possible_statements:
             return self.generate_assignment(depth)
 
-
-
         statement_type = random.choice(possible_statements)
 
         if statement_type == 'assign':
@@ -142,13 +140,7 @@ class MiniLangGP:
 
     def generate_expression(self, depth: int) -> Node:
         if depth >= self.max_depth or (random.random() < 0.5):
-            choice = random.random()
-            if choice < 0.33:
-                return Node('INT', str(random.randint(0, 100)))
-            elif choice < 0.66:
-                return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
-            else:
-                return Node('ID', random.choice(self.variables))
+            return self.generate_terminal_node()
         else:
             expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
             node = Node('expression', random.choice(self.operators[expr_type]))
@@ -157,6 +149,119 @@ class MiniLangGP:
                 self.generate_expression(depth + 1)
             ]
             return node
+
+    def generate_random_program_full(self, depth: int = 0):
+        if depth >= self.max_depth:
+            return self.generate_terminal_node()
+
+        program = Node('program', '')
+        num_statements = random.randint(3, 6)
+
+        for _ in range(num_statements):
+            program.children.append(self.generate_random_statement_full(depth + 1))
+
+        return program
+
+    def generate_while_full(self, depth: int):
+        node = Node('whileStatement', 'while')
+        node.children = [
+            self.generate_expression_full(depth + 1),
+            self.generate_block_full(depth + 1)
+        ]
+        return node
+
+    def generate_block_full(self, depth: int):
+        block = Node('block', '{')
+
+        num_statements = random.randint(1, 3) if depth + 1 < self.max_depth else 1
+        for _ in range(num_statements):
+            block.children.append(self.generate_random_statement_full(depth + 1))
+
+        return block
+
+    def generate_if_full(self, depth: int):
+        node = Node('ifStatement', 'if')
+        node.children = [
+            self.generate_expression_full(depth + 1),
+            self.generate_block_full(depth + 1)
+        ]
+
+        node.children.append(self.generate_block_full(depth + 1))
+        return node
+
+    def generate_io_full(self, depth: int):
+        io_type = random.choice(['input', 'output'])
+        node = Node('ioStatement', io_type)
+        if io_type == 'input':
+            node.children = [Node('ID', random.choice(self.variables))]
+        else:
+            node.children = [self.generate_expression_full(depth + 1)]
+        return node
+
+    def generate_expression_full(self, depth: int):
+        if depth >= self.max_depth:
+            return self.generate_terminal_node()
+
+        expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
+        node = Node('expression', random.choice(self.operators[expr_type]))
+
+        if depth + 1 < self.max_depth:
+            node.children = [
+                self.generate_expression_full(depth + 1),
+                self.generate_expression_full(depth + 1)
+            ]
+        else:
+            node.children = [
+                self.generate_terminal_node(),
+                self.generate_terminal_node()
+            ]
+
+        return node
+
+    def generate_terminal_node(self):
+        choice = random.random()
+        if choice < 0.33:
+            return Node('INT', str(random.randint(0, 100)))
+        elif choice < 0.66:
+            return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
+        else:
+            return Node('ID', random.choice(self.variables))
+
+    def generate_random_statement_full(self, depth: int):
+        if depth >= self.max_depth:
+            return self.generate_assignment_full(depth)
+
+        possible_statements = []
+        for st in self.statement_types:
+            required_depth = self.required_depth_for_statement(st)
+            if depth + required_depth < self.max_depth:
+                possible_statements.append(st)
+
+        if depth == 1:
+            possible_statements.append('io')
+
+        if not possible_statements:
+            return self.generate_assignment_full(depth)
+
+        deeper_statements = [st for st in possible_statements if self.required_depth_for_statement(st) > 0]
+        statement_type = random.choice(deeper_statements if deeper_statements else possible_statements)
+
+        if statement_type == 'assign':
+            return self.generate_assignment_full(depth)
+        elif statement_type == 'while':
+            return self.generate_while_full(depth)
+        elif statement_type == 'if':
+            return self.generate_if_full(depth)
+        elif statement_type == 'io':
+            return self.generate_io_full(depth)
+
+    def generate_assignment_full(self, depth: int) -> Node:
+        node = Node('assignStatement', '=')
+        node.children = [
+            Node('ID', random.choice(self.variables)),
+            self.generate_expression_full(depth + 1)
+        ]
+        return node
 
     def crossover(self, parent1: Node, parent2: Node) -> Tuple[Node, Node]:
         offspring1 = copy.deepcopy(parent1)

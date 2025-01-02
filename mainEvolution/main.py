@@ -8,7 +8,7 @@ def main():
     generations = 100
     tournament_size = 2
 
-    population = [gp.generate_random_program() for _ in range(population_size)]
+    population = gp.generate_initial_population(population_size)
 
     print("\nPrzykład ewolucji:")
     for generation in range(generations):

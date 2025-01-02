@@ -23,7 +23,7 @@ from utilities.graph import draw_tree_to_file
 
 
 def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=100, tournament_size=3):
-    population = [gp.generate_random_program() for _ in range(population_size)]
+    population = gp.generate_initial_population(population_size)
     results = {
         "task_name": task_name,
         "best_program": None,

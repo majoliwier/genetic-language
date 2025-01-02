@@ -40,6 +40,21 @@ class MiniLangGP:
         else:
             return 1
 
+    def generate_initial_population(self, population_size: int):
+
+        population = []
+        half_pop = population_size // 2
+
+        for _ in range(half_pop):
+            population.append(self.generate_random_program())
+
+        for _ in range(population_size - half_pop):
+            population.append(self.generate_random_program_full())
+
+        return population
+
+    # grow tree generation
+
     def generate_random_program(self, depth: int = 0) -> Node:
         program = Node('program', '')
         num_statements = random.randint(3, 6)
@@ -149,6 +164,8 @@ class MiniLangGP:
                 self.generate_expression(depth + 1)
             ]
             return node
+
+    # full tree generation
 
     def generate_random_program_full(self, depth: int = 0):
         if depth >= self.max_depth:
@@ -263,36 +280,50 @@ class MiniLangGP:
         ]
         return node
 
+    # genetic operations
+
     def crossover(self, parent1: Node, parent2: Node) -> Tuple[Node, Node]:
         offspring1 = copy.deepcopy(parent1)
         offspring2 = copy.deepcopy(parent2)
 
-        nodes1 = self._get_all_nodes(offspring1)
-        nodes2 = self._get_all_nodes(offspring2)
+        nodes1_by_depth = self._get_nodes_by_depth(offspring1)
+        nodes2_by_depth = self._get_nodes_by_depth(offspring2)
 
-        common_types = set(node.type for node in nodes1) & set(node.type for node in nodes2)
-        if not common_types:
-            return offspring1, offspring2
+        for depth in sorted(nodes1_by_depth.keys()):
+            if depth in nodes2_by_depth:
+                nodes1 = nodes1_by_depth[depth]
+                nodes2 = nodes2_by_depth[depth]
 
-        selected_type = random.choice(list(common_types))
-        nodes1_same_type = [node for node in nodes1 if node.type == selected_type]
-        nodes2_same_type = [node for node in nodes2 if node.type == selected_type]
+                nodes1 = [node for node in nodes1 if node.type != 'program']
+                nodes2 = [node for node in nodes2 if node.type != 'program']
 
-        if not nodes1_same_type or not nodes2_same_type:
-            return offspring1, offspring2
+                if nodes1 and nodes2:
+                    node1 = random.choice(nodes1)
+                    node2 = random.choice(nodes2)
 
-        node1 = random.choice(nodes1_same_type)
-        node2 = random.choice(nodes2_same_type)
+                    parent1_node, index1 = self._find_parent(offspring1, node1)
+                    parent2_node, index2 = self._find_parent(offspring2, node2)
 
-        parent1_node1, index1 = self._find_parent(offspring1, node1)
-        parent2_node2, index2 = self._find_parent(offspring2, node2)
-
-        if parent1_node1 is None or parent2_node2 is None:
-            return offspring1, offspring2
-
-        parent1_node1.children[index1], parent2_node2.children[index2] = parent2_node2.children[index2], parent1_node1.children[index1]
+                    if parent1_node is not None and parent2_node is not None:
+                        parent1_node.children[index1], parent2_node.children[index2] = \
+                            parent2_node.children[index2], parent1_node.children[index1]
+                    break
 
         return offspring1, offspring2
+
+    def _get_nodes_by_depth(self, node: Node, depth: int = 0, nodes_by_depth: Optional[dict] = None) -> dict:
+        if nodes_by_depth is None:
+            nodes_by_depth = {}
+
+        if depth not in nodes_by_depth:
+            nodes_by_depth[depth] = []
+
+        nodes_by_depth[depth].append(node)
+
+        for child in node.children:
+            self._get_nodes_by_depth(child, depth + 1, nodes_by_depth)
+
+        return nodes_by_depth
 
     def _find_parent(self, node: Node, target: Node) -> Tuple[Optional[Node], int]:
         for i, child in enumerate(node.children):
@@ -305,40 +336,44 @@ class MiniLangGP:
 
     def mutate(self, program: Node) -> Node:
         mutated = copy.deepcopy(program)
-        nodes = self._get_all_nodes(mutated)
 
-        if not nodes:
+        all_nodes = [n for n in self._get_all_nodes(mutated) if n.type != 'program']
+        if not all_nodes:
             return mutated
 
-        node = random.choice(nodes)
+        node_to_mutate = random.choice(all_nodes)
 
-        if node.type == 'INT':
-            node.value = str(random.randint(0, 100))
-        elif node.type == 'FLOAT':
-            node.value = f"{random.uniform(0, 100):.2f}"
-        elif node.type == 'ID':
-            node.value = random.choice(self.variables)
-        elif node.type == 'expression':
-            if len(node.children) == 2:
-                mutation_choice = random.choice(['operator', 'left', 'right'])
-                if mutation_choice == 'operator':
-                    expr_type = random.choice(['arithmetic', 'comparison', 'logical'])
-                    node.value = random.choice(self.operators[expr_type])
-                elif mutation_choice == 'left':
-                    node.children[0] = self.generate_expression(0)
-                elif mutation_choice == 'right':
-                    node.children[1] = self.generate_expression(0)
-        elif node.type == 'assignStatement':
-            if len(node.children) >= 2:
-                node.children[1] = self.generate_expression(0)
-        elif node.type in ['breakStatement', 'continueStatement']:
-            pass
+        parent, index = self._find_parent(mutated, node_to_mutate)
+        if parent is None:
+
+            return mutated
+        if node_to_mutate.type in ['ifStatement', 'whileStatement',
+                                   'assignStatement', 'ioStatement',
+                                   'breakStatement', 'continueStatement']:
+            new_subtree = self.generate_random_statement(depth=0)
+
+        elif node_to_mutate.type == 'block':
+            new_subtree = self.generate_block(depth=0)
+
+        elif node_to_mutate.type == 'expression':
+            new_subtree = self.generate_expression(depth=0)
+
+        elif node_to_mutate.type in ['INT', 'FLOAT', 'ID']:
+            new_subtree = self.generate_expression(depth=0)
+
+        else:
+            new_subtree = self.generate_expression(depth=0)
+
+        parent.children[index] = new_subtree
 
         return mutated
 
     def tournament_selection(self, population: List[Node],fitness_func: Callable[[Node], float], tournament_size: int) -> Node:
         tournament = random.sample(population, tournament_size)
         return max(tournament, key=fitness_func)
+
+
+    # serialization & utilities
 
     def _get_all_nodes(self, node: Node) -> List[Node]:
         nodes = [node]
@@ -364,6 +399,8 @@ class MiniLangGP:
     def deserialize(self, serial_data: str) -> Node:
         data = json.loads(serial_data)
         return self._from_dict(data)
+
+    # printing code
 
 def generate_code(node: 'Node', indent: int = 0) -> str:
     if node is None:

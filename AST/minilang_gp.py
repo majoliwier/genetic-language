@@ -16,7 +16,7 @@ class Node:
 
 class MiniLangGP:
     def __init__(self, max_depth: int = 5):
-        self.max_depth = max_depth
+        self.max_depth = max_depth + 1
         self.operators = {
             'arithmetic': ['*', '/', '+', '-'],
             'comparison': ['==', '!=', '<', '>', '<=', '>='],
@@ -51,7 +51,7 @@ class MiniLangGP:
         possible_statements = []
         for st in self.statement_types:
             required_depth = self.required_depth_for_statement(st)
-            if depth + required_depth <= self.max_depth:
+            if depth + required_depth < self.max_depth:
                 possible_statements.append(st)
 
         if not possible_statements:
@@ -74,7 +74,7 @@ class MiniLangGP:
         possible_statements = []
         for st in self.loop_if_statement_types:
             required_depth = self.required_depth_for_statement(st)
-            if depth + required_depth <= self.max_depth:
+            if depth + required_depth < self.max_depth:
                 possible_statements.append(st)
 
         if not possible_statements:

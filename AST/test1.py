@@ -8,7 +8,7 @@ population_size = 2
 population = gp.generate_initial_population(population_size)
 
 for individual in range(population_size):
-    print("Program numer: ", individual+1)
+    print("Program numer: ", individual + 1)
     print(generate_code(population[individual]))
     draw_tree(population[individual])
 

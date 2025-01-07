@@ -1,5 +1,7 @@
 from AST.MiniLangInterpreter import MiniLangInterpreter, advanced_fitness_function
 from AST.minilang_gp import generate_code, MiniLangGP
+
+
 def main():
     gp = MiniLangGP(max_depth=5)
 

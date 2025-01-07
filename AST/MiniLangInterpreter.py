@@ -1,5 +1,6 @@
 import threading
 
+
 class MiniLangInterpreter:
     def __init__(self, input_data=None, max_loop_iterations=100, max_execution_time=3):
         self.variables = {}
@@ -137,7 +138,6 @@ class MiniLangInterpreter:
 
 
 def advanced_fitness_function(program, test_data):
-
     total_error = 0.0
     input_penalty = 0.0
 

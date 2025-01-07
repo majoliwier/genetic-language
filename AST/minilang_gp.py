@@ -4,6 +4,7 @@ import random
 import json
 import copy
 
+
 @dataclass
 class Node:
     type: str
@@ -13,6 +14,7 @@ class Node:
     def __post_init__(self):
         if self.children is None:
             self.children = []
+
 
 class MiniLangGP:
     def __init__(self, max_depth: int = 5):
@@ -362,7 +364,6 @@ class MiniLangGP:
 
         parent, index = self._find_parent(mutated, node_to_mutate)
         if parent is None:
-
             return mutated
 
         if node_to_mutate.type == 'ID':
@@ -406,10 +407,10 @@ class MiniLangGP:
         parent.children[index] = new_subtree
         return mutated
 
-    def tournament_selection(self, population: List[Node],fitness_func: Callable[[Node], float], tournament_size: int) -> Node:
+    def tournament_selection(self, population: List[Node], fitness_func: Callable[[Node], float],
+                             tournament_size: int) -> Node:
         tournament = random.sample(population, tournament_size)
         return max(tournament, key=fitness_func)
-
 
     # serialization & utilities
 
@@ -439,6 +440,7 @@ class MiniLangGP:
         return self._from_dict(data)
 
     # printing code
+
 
 def generate_code(node: 'Node', indent: int = 0) -> str:
     if node is None:
@@ -500,6 +502,7 @@ def generate_code(node: 'Node', indent: int = 0) -> str:
         code += node.value
 
     return code
+
 
 def example_fitness_function(program: 'Node') -> float:
     return random.random()

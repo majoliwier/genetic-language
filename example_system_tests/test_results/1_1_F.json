@@ -1,0 +1,13 @@
+{
+    "task_name": "1.1.F",
+    "best_program": "{\"type\": \"program\", \"value\": \"\", \"children\": [{\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_9\", \"children\": []}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"||\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"57543.01\", \"children\": []}, {\"type\": \"INT\", \"value\": \"79839\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_7\", \"children\": []}]}, {\"type\": \"whileStatement\", \"value\": \"while\", \"children\": [{\"type\": \"expression\", \"value\": \"-\", \"children\": [{\"type\": \"ID\", \"value\": \"var_2\", \"children\": []}, {\"type\": \"expression\", \"value\": \">\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"72212.54\", \"children\": []}, {\"type\": \"expression\", \"value\": \"==\", \"children\": [{\"type\": \"INT\", \"value\": \"36109\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"8240.06\", \"children\": []}]}]}]}, {\"type\": \"block\", \"value\": \"{\", \"children\": [{\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_4\", \"children\": []}, {\"type\": \"INT\", \"value\": \"27912\", \"children\": []}]}, {\"type\": \"breakStatement\", \"value\": \"break\", \"children\": []}]}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_7\", \"children\": []}, {\"type\": \"INT\", \"value\": \"85346\", \"children\": []}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_5\", \"children\": []}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_1\", \"children\": []}]}]}",
+    "fitness_score": 1.0,
+    "generation_found": 1,
+    "generations": [
+        {
+            "generation": 1,
+            "best_fitness": 1.0,
+            "average_fitness": 0.5953485811233342
+        }
+    ]
+}

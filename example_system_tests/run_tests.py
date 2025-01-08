@@ -1,3 +1,5 @@
+import numpy as np
+
 from AST.minilang_gp import MiniLangGP, generate_code
 from fitness_functions import (
     fitness_1_1_A,
@@ -24,7 +26,10 @@ from utilities.graph import draw_tree_to_file
 
 def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=100, tournament_size=3,
                 stagnation_threshold=10, initial_mutation_prob=0.2, high_mutation_prob=0.5):
+
     population = gp.generate_initial_population(population_size)
+    elite_size = int(population_size * 0.1)
+
     results = {
         "task_name": task_name,
         "best_program": None,
@@ -52,8 +57,11 @@ def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=10
         print(f"Zadanie {task_name} - Generacja {generation + 1}:")
         print(f"  Najlepsze przystosowanie: {best_fitness:.4f}")
         print(f"  Średnie przystosowanie: {avg_fitness:.4f}")
-        best_program = max(population, key=fitness_func)
-        # print(f"  Najelpszy program:\n {generate_code(best_program)}")
+
+        elite = sorted(zip(population, fitness_scores),
+                       key=lambda x: x[1],
+                       reverse=True)[:elite_size]
+        elite_population = [ind for ind, _ in elite]
 
         if best_fitness > last_best_fitness:
             last_best_fitness = best_fitness
@@ -63,7 +71,11 @@ def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=10
             stagnation_count += 1
             if stagnation_count >= stagnation_threshold:
                 mutation_prob = high_mutation_prob
-                print(f"  Stagnacja wykryta. Zwiększanie prawdopodobieństwa mutacji do {mutation_prob}")
+
+                # num_random = int(population_size * 0.1)
+                # population[-num_random:] = gp.generate_initial_population(num_random)
+                print(
+                    f"  Stagnacja wykryta. Zwiększanie mutacji do {mutation_prob}")
 
         if best_fitness == 1.0:
             best_program = max(population, key=fitness_func)
@@ -75,7 +87,10 @@ def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=10
             best_program_node = best_program
             break
 
-        for _ in range(population_size):
+        new_population = elite_population.copy()
+
+        while len(new_population) < population_size:
+
             parent1 = gp.tournament_selection(population, fitness_func, tournament_size)
             parent2 = gp.tournament_selection(population, fitness_func, tournament_size)
 
@@ -83,17 +98,15 @@ def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=10
             if chance < mutation_prob:
                 offspring = gp.mutate(parent1)
             elif chance < 0.8:
-                offspring, _ = gp.crossover(parent1, parent2)
+                offspring1, offspring2 = gp.crossover(parent1, parent2)
+
+                offspring = max([offspring1, offspring2], key=fitness_func)
             else:
                 offspring = parent1
 
-            offspring_fitness = fitness_func(offspring)
+            new_population.append(offspring)
 
-            worst_index = min(range(len(population)), key=lambda i: fitness_scores[i])
-
-            if offspring_fitness > fitness_scores[worst_index]:
-                population[worst_index] = offspring
-                fitness_scores[worst_index] = offspring_fitness
+        population = new_population
 
     if results["best_program"] is None:
         best_program = max(population, key=fitness_func)
@@ -132,7 +145,7 @@ def save_results_to_json(results, task_name):
 
 
 def main():
-    gp = MiniLangGP(max_depth=4)
+    gp = MiniLangGP(max_depth=3)
 
     test_cases = {
         # "1.1.A": fitness_1_1_A,

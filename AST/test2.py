@@ -1,9 +1,9 @@
-from AST.MiniLangInterpreter import MiniLangInterpreter, advanced_fitness_function
+from AST.MiniLangInterpreter import MiniLangInterpreter
 from AST.minilang_gp import generate_code, MiniLangGP
 
 
 def main():
-    gp = MiniLangGP(max_depth=5)
+    gp = MiniLangGP(max_depth=3)
 
     example_program = gp.generate_random_program()
 
@@ -17,17 +17,6 @@ def main():
 
     print("\nGenerated Code:")
     print(generate_code(example_program))
-
-    test_data = {
-        "inputs": [
-            {"var_0": 10, "var_1": 20},
-            {"var_0": 5, "var_1": 15}
-        ],
-        "expected_outputs": [30, 20]
-    }
-
-    fitness_score = advanced_fitness_function(example_program, test_data)
-    print(f"\nFitness Score: {fitness_score}")
 
 
 if __name__ == "__main__":

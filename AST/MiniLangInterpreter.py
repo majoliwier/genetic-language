@@ -80,7 +80,7 @@ class MiniLangInterpreter:
                 for stmt in if_block_node.children:
                     self.execute_statement(stmt)
 
-            if len(node.children) > 2:
+            elif len(node.children) > 2:
                 else_block_node = node.children[2]
                 for stmt in else_block_node.children:
                     self.execute_statement(stmt)
@@ -135,30 +135,3 @@ class MiniLangInterpreter:
                 if op == '||': return int(bool(left) or bool(right))
 
         return 0
-
-
-def advanced_fitness_function(program, test_data):
-    total_error = 0.0
-    input_penalty = 0.0
-
-    for input_set, expected_output in zip(test_data['inputs'], test_data['expected_outputs']):
-        interpreter = MiniLangInterpreter(input_data=input_set)
-
-        interpreter.execute_program(program)
-
-        if interpreter.output_buffer:
-            actual_output = interpreter.output_buffer[-1]
-        else:
-            actual_output = 0
-
-        try:
-            error = abs(float(actual_output) - float(expected_output))
-            total_error += error
-        except (ValueError, TypeError):
-            total_error += 1.0 if str(actual_output) != str(expected_output) else 0.0
-
-        input_penalty += max(0, len(input_set) - len(test_data['expected_outputs']) * 2) * 0.1
-
-    total_error += input_penalty
-
-    return total_error

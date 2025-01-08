@@ -27,21 +27,30 @@ def calculate_numeric_similarity(actual, target):
 def evaluate_output_position(output, target, desired_position=None):
     """
     Ocenia występowanie liczby target w output z uwzględnieniem pozycji.
+    Jeśli desired_position jest podane, sprawdza, czy wartość na tej pozycji
+    jest równa target. Zwraca:
+      - 1.0, jeśli wartość na desired_position jest równa target,
+      - 0.5, jeśli target występuje gdzie indziej w output,
+      - lub wagę podobieństwa, gdy nie ma targetu.
     """
     if not output:
         return 0.0
 
+    # Jeśli celowa wartość jest dokładnie na żądanej pozycji
+    if desired_position is not None and desired_position < len(output) and output[desired_position] == target:
+        return 1.0
+
+    # Jeśli celowa wartość występuje gdziekolwiek w output
     if target in output:
-        if desired_position is None:
-            return 1.0
-        elif desired_position < len(output) and output[desired_position] == target:
-            return 1.0
-        else:
-            return 0.5
+        return 0.5
 
-    similarity = calculate_numeric_similarity(output[desired_position], target)
+    # Jeśli nie znaleziono targetu, można zwrócić część podobieństwa
+    # (opcjonalnie, zależy od preferowanej logiki)
+    if desired_position is not None and desired_position < len(output):
+        similarity = calculate_numeric_similarity(output[desired_position], target)
+        return similarity * 0.5
 
-    return similarity * 0.5
+    return 0.0
 
 
 def evaluate_output_length(output, desired_length=1):
@@ -80,8 +89,6 @@ def fitness_1_1_B(program):
     interpreter = MiniLangInterpreter(max_loop_iterations=1000, max_execution_time=3)
     interpreter.execute_program(program)
     output = interpreter.output_buffer
-
-    # position_score = evaluate_output_position(output, 789)
 
     if any(value == 789 for value in output):
         return 1.0
@@ -125,13 +132,16 @@ def fitness_1_1_D(program):
     interpreter.execute_program(program)
     output = interpreter.output_buffer
 
-    position_score = evaluate_output_position(output, 1, desired_position=0)
+    # Sprawdzamy, czy output nie jest pusty i czy pierwsza wartość to 1.
+    if output and len(output) > 0:
+        try:
+            # Porównujemy pierwszą wartość z oczekiwaną
+            if float(output[0]) == 1.0:
+                return 1.0  # Idealny program
+        except (ValueError, TypeError):
+            pass
 
-    range_score = 0.0
-    if output:
-        range_score = max(calculate_numeric_similarity(x, 1) for x in output)
-
-    return 0.8 * position_score + 0.2 * range_score
+    return 0.0
 
 
 def fitness_1_1_E(program):
@@ -161,13 +171,16 @@ def fitness_1_1_F(program):
     interpreter.execute_program(program)
     output = interpreter.output_buffer
 
-    value_score = 0.0
-    if output:
-        value_score = calculate_numeric_similarity(output[0], 1)
+    # Sprawdzamy, czy output zawiera dokładnie jedną wartość
+    if output is not None and len(output) == 1:
+        try:
+            # Sprawdzamy, czy ta jedyna wartość to 1
+            if float(output[0]) == 1.0:
+                return 1.0  # Program spełnia wymagania
+        except (ValueError, TypeError):
+            pass
 
-    length_score = evaluate_output_length(output, 1)
-
-    return 0.7 * value_score + 0.3 * length_score
+    return 0.0
 
 
 def evaluate_arithmetic_operation(program, test_data, operation="sum"):
@@ -219,15 +232,28 @@ def fitness_1_2_A(program):
     """
     test_data = {
         "inputs": [
-            {"var_0": 0, "var_1": 0},
-            {"var_0": 5, "var_1": 3},
-            {"var_0": 9, "var_1": 9},
-            {"var_0": 2, "var_1": 7},
-            {"var_0": 4, "var_1": 6}
+            {"var_0": 3, "var_1": 5},
+            {"var_0": 7, "var_1": 2},
+            {"var_0": 0, "var_1": 9}
         ],
-        "expected_outputs": [0, 8, 18, 9, 10]
+        "expected_outputs": [8, 9, 9]
     }
-    return evaluate_arithmetic_operation(program, test_data, operation="sum")
+    total_error = 0.0
+
+    for input_set, expected_output in zip(test_data["inputs"], test_data["expected_outputs"]):
+        interpreter = MiniLangInterpreter(input_data=input_set, max_loop_iterations=1000, max_execution_time=3)
+        interpreter.execute_program(program)
+        output = interpreter.output_buffer
+
+        actual_output = output[-1] if output else None
+
+        try:
+            error = abs(float(actual_output) - float(expected_output))
+        except (ValueError, TypeError):
+            error = float('inf')
+        total_error += error
+
+    return 1.0 / (1.0 + total_error)
 
 
 def fitness_1_2_B(program):
@@ -238,15 +264,27 @@ def fitness_1_2_B(program):
     """
     test_data = {
         "inputs": [
-            {"var_0": -9, "var_1": -9},
-            {"var_0": -5, "var_1": 5},
-            {"var_0": 0, "var_1": 0},
-            {"var_0": 7, "var_1": -3},
-            {"var_0": 9, "var_1": -9}
+            {"var_0": -5, "var_1": 3},
+            {"var_0": 9, "var_1": -2},
+            {"var_0": 0, "var_1": 0}
         ],
-        "expected_outputs": [-18, 0, 0, 4, 0]
+        "expected_outputs": [-2, 7, 0]
     }
-    return evaluate_arithmetic_operation(program, test_data, operation="sum")
+    total_error = 0.0
+
+    for input_set, expected_output in zip(test_data["inputs"], test_data["expected_outputs"]):
+        interpreter = MiniLangInterpreter(input_data=input_set, max_loop_iterations=1000, max_execution_time=3)
+        interpreter.execute_program(program)
+        output = interpreter.output_buffer
+
+        actual_output = output[-1] if output else None
+        try:
+            error = abs(float(actual_output) - float(expected_output))
+        except (ValueError, TypeError):
+            error = float('inf')
+        total_error += error
+
+    return 1.0 / (1.0 + total_error)
 
 
 def fitness_1_2_C(program):
@@ -257,15 +295,27 @@ def fitness_1_2_C(program):
     """
     test_data = {
         "inputs": [
-            {"var_0": -9999, "var_1": -9999},
-            {"var_0": 1234, "var_1": 5678},
-            {"var_0": -5000, "var_1": 5000},
-            {"var_0": 9999, "var_1": -9999},
-            {"var_0": 0, "var_1": 0}
+            {"var_0": 1234, "var_1": 8765},
+            {"var_0": -500, "var_1": 500},
+            {"var_0": 9999, "var_1": -9999}
         ],
-        "expected_outputs": [-19998, 6912, 0, 0, 0]
+        "expected_outputs": [9999, 0, 0]
     }
-    return evaluate_arithmetic_operation(program, test_data, operation="sum")
+    total_error = 0.0
+
+    for input_set, expected_output in zip(test_data["inputs"], test_data["expected_outputs"]):
+        interpreter = MiniLangInterpreter(input_data=input_set, max_loop_iterations=1000, max_execution_time=3)
+        interpreter.execute_program(program)
+        output = interpreter.output_buffer
+
+        actual_output = output[-1] if output else None
+        try:
+            error = abs(float(actual_output) - float(expected_output))
+        except (ValueError, TypeError):
+            error = float('inf')
+        total_error += error
+
+    return 1.0 / (1.0 + total_error)
 
 
 def fitness_1_2_D(program):
@@ -276,15 +326,27 @@ def fitness_1_2_D(program):
     """
     test_data = {
         "inputs": [
-            {"var_0": 10, "var_1": 5},
-            {"var_0": -5, "var_1": -5},
-            {"var_0": 1000, "var_1": 999},
-            {"var_0": -100, "var_1": 50},
-            {"var_0": 0, "var_1": 0}
+            {"var_0": 1000, "var_1": 500},
+            {"var_0": -2000, "var_1": 1000},
+            {"var_0": 300, "var_1": 300}
         ],
-        "expected_outputs": [5, 0, 1, -150, 0]
+        "expected_outputs": [500, -3000, 0]  # var_0 - var_1
     }
-    return evaluate_arithmetic_operation(program, test_data, operation="difference")
+    total_error = 0.0
+
+    for input_set, expected_output in zip(test_data["inputs"], test_data["expected_outputs"]):
+        interpreter = MiniLangInterpreter(input_data=input_set, max_loop_iterations=1000, max_execution_time=3)
+        interpreter.execute_program(program)
+        output = interpreter.output_buffer
+
+        actual_output = output[-1] if output else None
+        try:
+            error = abs(float(actual_output) - float(expected_output))
+        except (ValueError, TypeError):
+            error = float('inf')
+        total_error += error
+
+    return 1.0 / (1.0 + total_error)
 
 
 def fitness_1_2_E(program):
@@ -295,15 +357,27 @@ def fitness_1_2_E(program):
     """
     test_data = {
         "inputs": [
-            {"var_0": 2, "var_1": 3},
-            {"var_0": -4, "var_1": 5},
-            {"var_0": 0, "var_1": 100},
-            {"var_0": -7, "var_1": -8},
-            {"var_0": 9999, "var_1": 1}
+            {"var_0": 5, "var_1": 3},
+            {"var_0": -4, "var_1": 2},
+            {"var_0": -7, "var_1": -3}
         ],
-        "expected_outputs": [6, -20, 0, 56, 9999]
+        "expected_outputs": [15, -8, 21]  # iloczyn var_0 * var_1
     }
-    return evaluate_arithmetic_operation(program, test_data, operation="product")
+    total_error = 0.0
+
+    for input_set, expected_output in zip(test_data["inputs"], test_data["expected_outputs"]):
+        interpreter = MiniLangInterpreter(input_data=input_set, max_loop_iterations=1000, max_execution_time=3)
+        interpreter.execute_program(program)
+        output = interpreter.output_buffer
+
+        actual_output = output[-1] if output else None
+        try:
+            error = abs(float(actual_output) - float(expected_output))
+        except (ValueError, TypeError):
+            error = float('inf')
+        total_error += error
+
+    return 1.0 / (1.0 + total_error)
 
 
 def evaluate_max_operation(program, test_data):

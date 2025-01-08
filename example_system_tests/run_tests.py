@@ -137,11 +137,11 @@ def main():
     test_cases = {
         # "1.1.A": fitness_1_1_A,
         # "1.1.B": fitness_1_1_B,
-        "1.1.C": fitness_1_1_C,
+        # "1.1.C": fitness_1_1_C,
         # "1.1.D": fitness_1_1_D,
         # "1.1.E": fitness_1_1_E,
         # "1.1.F": fitness_1_1_F,
-        # "1.2.A": fitness_1_2_A,
+        "1.2.A": fitness_1_2_A,
         # "1.2.B": fitness_1_2_B,
         # "1.2.C": fitness_1_2_C,
         # "1.2.D": fitness_1_2_D,
@@ -160,9 +160,9 @@ def main():
             gp=gp,
             fitness_func=fitness_func,
             task_name=task_name,
-            population_size=10000,
+            population_size=1000,
             generations=150,
-            tournament_size=5,
+            tournament_size=3,
             initial_mutation_prob=0.2,
             high_mutation_prob=0.6
         )

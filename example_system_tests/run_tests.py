@@ -132,24 +132,24 @@ def save_results_to_json(results, task_name):
 
 
 def main():
-    gp = MiniLangGP(max_depth=2)
+    gp = MiniLangGP(max_depth=4)
 
     test_cases = {
-        "1.1.A": fitness_1_1_A,
-        "1.1.B": fitness_1_1_B,
+        # "1.1.A": fitness_1_1_A,
+        # "1.1.B": fitness_1_1_B,
         "1.1.C": fitness_1_1_C,
-        "1.1.D": fitness_1_1_D,
-        "1.1.E": fitness_1_1_E,
-        "1.1.F": fitness_1_1_F,
-        "1.2.A": fitness_1_2_A,
-        "1.2.B": fitness_1_2_B,
-        "1.2.C": fitness_1_2_C,
-        "1.2.D": fitness_1_2_D,
-        "1.2.E": fitness_1_2_E,
-        "1.3.A": fitness_1_3_A,
-        "1.3.B": fitness_1_3_B,
-        "1.4.A": fitness_1_4_A,
-        "1.4.B": fitness_1_4_B
+        # "1.1.D": fitness_1_1_D,
+        # "1.1.E": fitness_1_1_E,
+        # "1.1.F": fitness_1_1_F,
+        # "1.2.A": fitness_1_2_A,
+        # "1.2.B": fitness_1_2_B,
+        # "1.2.C": fitness_1_2_C,
+        # "1.2.D": fitness_1_2_D,
+        # "1.2.E": fitness_1_2_E,
+        # "1.3.A": fitness_1_3_A,
+        # "1.3.B": fitness_1_3_B,
+        # "1.4.A": fitness_1_4_A,
+        # "1.4.B": fitness_1_4_B
     }
 
     results_summary = {}
@@ -160,9 +160,11 @@ def main():
             gp=gp,
             fitness_func=fitness_func,
             task_name=task_name,
-            population_size=100,
-            generations=100,
-            tournament_size=3
+            population_size=10000,
+            generations=150,
+            tournament_size=5,
+            initial_mutation_prob=0.2,
+            high_mutation_prob=0.6
         )
         results_summary[task_name] = best_program
 

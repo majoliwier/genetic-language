@@ -23,6 +23,7 @@ def calculate_numeric_similarity(actual, target):
 
     return similarity
 
+
 def evaluate_output_position(output, target, desired_position=None):
     """
     Ocenia występowanie liczby target w output z uwzględnieniem pozycji.
@@ -63,13 +64,12 @@ def fitness_1_1_A(program):
     interpreter.execute_program(program)
     output = interpreter.output_buffer
 
-    # position_score = evaluate_output_position(output, 1)
-
-    range_score = 0.0
-    if output:
-        range_score = max(calculate_numeric_similarity(x, 1) for x in output)
-
-    return range_score
+    if any(value == 1 for value in output):
+        return 1.0
+    elif output:
+        return max(calculate_numeric_similarity(x, 1) for x in output)
+    else:
+        return 0.0
 
 
 def fitness_1_1_B(program):
@@ -83,11 +83,12 @@ def fitness_1_1_B(program):
 
     # position_score = evaluate_output_position(output, 789)
 
-    range_score = 0.0
-    if output:
-        range_score = max(calculate_numeric_similarity(x, 789) for x in output)
-
-    return range_score
+    if any(value == 789 for value in output):
+        return 1.0
+    elif output:
+        return max(calculate_numeric_similarity(x, 789) for x in output)
+    else:
+        return 0.0
 
 
 def fitness_1_1_C(program):
@@ -101,11 +102,18 @@ def fitness_1_1_C(program):
 
     # position_score = evaluate_output_position(output, 31415)
 
-    range_score = 0.0
-    if output:
-        range_score = max(calculate_numeric_similarity(x, 31415) for x in output)
+    # range_score = 0.0
+    # if output:
+    #     range_score = max(calculate_numeric_similarity(x, 31415) for x in output)
+    #
+    # return range_score
 
-    return range_score
+    if any(value == 31415 for value in output):
+        return 1.0
+    elif output:
+        return max(calculate_numeric_similarity(x, 31415) for x in output)
+    else:
+        return 0.0
 
 
 def fitness_1_1_D(program):
@@ -162,7 +170,6 @@ def fitness_1_1_F(program):
     return 0.7 * value_score + 0.3 * length_score
 
 
-
 def evaluate_arithmetic_operation(program, test_data, operation="sum"):
     """
     Wspólna funkcja przystosowania dla operacji arytmetycznych (suma, różnica, iloczyn).
@@ -202,8 +209,6 @@ def evaluate_arithmetic_operation(program, test_data, operation="sum"):
             continue
 
     return total_score / test_count
-
-
 
 
 def fitness_1_2_A(program):
@@ -300,6 +305,7 @@ def fitness_1_2_E(program):
     }
     return evaluate_arithmetic_operation(program, test_data, operation="product")
 
+
 def evaluate_max_operation(program, test_data):
     """
     Wspólna funkcja przystosowania dla operacji wyboru większej z dwóch liczb.
@@ -336,6 +342,7 @@ def evaluate_max_operation(program, test_data):
             continue
 
     return total_score / test_count
+
 
 def fitness_1_3_A(program):
     """
@@ -376,6 +383,7 @@ def fitness_1_3_B(program):
         "expected_outputs": [-9999, 5000, 5678, 50, 0, 9999, 7500]
     }
     return evaluate_max_operation(program, test_data)
+
 
 def evaluate_average_operation(program, test_data, count=None, variable_count=False):
     """
@@ -418,7 +426,6 @@ def evaluate_average_operation(program, test_data, count=None, variable_count=Fa
             continue
 
     return total_score / test_count
-
 
 
 def fitness_1_4_A(program):

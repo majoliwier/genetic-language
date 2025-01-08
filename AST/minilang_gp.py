@@ -59,7 +59,7 @@ class MiniLangGP:
 
     def generate_random_program(self, depth: int = 0) -> Node:
         program = Node('program', '')
-        num_statements = random.randint(3, 6)
+        num_statements = random.randint(5, 12)
         for _ in range(num_statements):
             program.children.append(self.generate_random_statement(depth + 1))
         return program
@@ -74,6 +74,7 @@ class MiniLangGP:
         if not possible_statements:
             return self.generate_assignment(depth)
 
+        possible_statements = ['assign'] * 2 + ['while'] + ['if'] + ['io'] * 3
         statement_type = random.choice(possible_statements)
 
         if statement_type == 'assign':
@@ -240,9 +241,9 @@ class MiniLangGP:
     def generate_terminal_node(self):
         choice = random.random()
         if choice < 0.33:
-            return Node('INT', str(random.randint(0, 100)))
+            return Node('INT', str(random.randint(0, 100000)))
         elif choice < 0.66:
-            return Node('FLOAT', f"{random.uniform(0, 100):.2f}")
+            return Node('FLOAT', f"{random.uniform(0, 100000):.2f}")
         else:
             return Node('ID', random.choice(self.variables))
 

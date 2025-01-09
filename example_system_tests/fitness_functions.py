@@ -383,6 +383,7 @@ def fitness_1_2_E(program):
 def evaluate_max_operation(program, test_data):
     """
     Wspólna funkcja przystosowania dla operacji wyboru większej z dwóch liczb.
+    Uwzględnia karę za nadmiarowe wejścia i wyjścia.
     """
     interpreter = MiniLangInterpreter(max_loop_iterations=1000, max_execution_time=3)
     total_score = 0.0
@@ -393,29 +394,32 @@ def evaluate_max_operation(program, test_data):
         interpreter.input_variables = input_set
         interpreter.execute_program(program)
 
-        if not interpreter.output_buffer:
+        input_calls = len(interpreter.input_variables)
+        if input_calls > 2:
+            total_score -= 0.5 * (input_calls - 2)
+            continue
+
+        if len(interpreter.output_buffer) != 1:
+            total_score -= 0.5
             continue
 
         actual = interpreter.output_buffer[-1]
-        try:
-            actual = float(actual)
-            expected = float(expected)
+        actual = float(actual)
+        expected = float(expected)
 
+        if actual == expected:
+            accuracy_score = 1.0
+        else:
             accuracy_score = calculate_numeric_similarity(actual, expected)
 
-            input_values = [float(v) for v in input_set.values()]
-            if actual >= max(input_values):
-                accuracy_score *= 1.2
+        length_score = evaluate_output_length(interpreter.output_buffer, 1)
 
-            length_score = evaluate_output_length(interpreter.output_buffer, 1)
+        test_score = 0.7 * accuracy_score + 0.3 * length_score
+        test_score = min(max(test_score, 0), 1)
 
-            test_score = 0.7 * accuracy_score + 0.3 * length_score
-            total_score += test_score
+        total_score += test_score
 
-        except (ValueError, TypeError):
-            continue
-
-    return total_score / test_count
+    return max(total_score / test_count, 0.0) if test_count > 0 else 0.0
 
 
 def fitness_1_3_A(program):
@@ -427,10 +431,10 @@ def fitness_1_3_A(program):
     test_data = {
         "inputs": [
             {"var_0": 0, "var_1": 0},
-            {"var_0": 1, "var_1": 2},
+            {"var_0": 2, "var_1": 1},
             {"var_0": 3, "var_1": 4},
             {"var_0": 5, "var_1": 6},
-            {"var_0": 7, "var_1": 8},
+            {"var_0": 8, "var_1": 7},
             {"var_0": 9, "var_1": 9}
         ],
         "expected_outputs": [0, 2, 4, 6, 8, 9]
@@ -472,34 +476,53 @@ def evaluate_average_operation(program, test_data, count=None, variable_count=Fa
         interpreter.input_variables = input_set
         interpreter.execute_program(program)
 
-        if not interpreter.output_buffer:
+        input_calls = len(interpreter.input_variables)
+
+        if variable_count:
+            if input_calls < 1:
+                total_score -= 0.5
+                continue
+
+            first_input = int(interpreter.input_variables[0])
+            if not (0 <= first_input <= 99):
+                total_score -= 1.0
+                continue
+
+            if input_calls != first_input + 1:
+                total_score -= 0.5 * abs(input_calls - (first_input + 1))
+                continue
+
+        elif count is not None and input_calls != count:
+            total_score -= 0.5 * abs(input_calls - count)
+            continue
+
+        if len(interpreter.output_buffer) != 1:
+            total_score -= 0.5
             continue
 
         actual = interpreter.output_buffer[-1]
-        try:
-            actual = float(actual)
-            expected = float(expected)
 
+        actual = float(actual)
+        expected = float(expected)
+
+        if actual == expected:
+            accuracy_score = 1.0
+        else:
             accuracy_score = calculate_numeric_similarity(actual, expected)
 
-            if variable_count:
-                n = input_set.get("var_0", 0)
-                used_inputs = len(interpreter.input_variables) - 1  # Odejmuje "var_0"
-                if used_inputs != n:
-                    accuracy_score *= 0.5
+        if abs(round(actual) - expected) < 0.1:
+            accuracy_score *= 1.2
 
-            if abs(round(actual) - expected) < 0.1:
-                accuracy_score *= 1.2
+        length_score = evaluate_output_length(interpreter.output_buffer, 1)
 
-            length_score = evaluate_output_length(interpreter.output_buffer, 1)
+        test_score = 0.7 * accuracy_score + 0.3 * length_score
+        test_score = min(max(test_score, 0), 1)
 
-            test_score = (0.7 * accuracy_score + 0.3 * length_score)
-            total_score += test_score
+        total_score += test_score
 
-        except (ValueError, TypeError):
-            continue
 
-    return total_score / test_count
+
+    return max(total_score / test_count, 0.0) if test_count > 0 else 0.0
 
 
 def fitness_1_4_A(program):

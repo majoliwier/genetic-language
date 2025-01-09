@@ -1,5 +1,3 @@
-import numpy as np
-
 from AST.minilang_gp import MiniLangGP, generate_code
 from fitness_functions import (
     fitness_1_1_A,

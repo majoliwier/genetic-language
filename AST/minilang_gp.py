@@ -17,7 +17,7 @@ class Node:
 
 
 class MiniLangGP:
-    def __init__(self, max_depth: int = 5):
+    def __init__(self, max_depth: int = 4):
         self.max_depth = max_depth + 1
         self.operators = {
             'arithmetic': ['*', '/', '+', '-'],
@@ -27,6 +27,7 @@ class MiniLangGP:
         self.statement_types = ['assign', 'while', 'if', 'io']
         self.loop_if_statement_types = self.statement_types + ['break', 'continue']
         self.variables = [f'var_{i}' for i in range(10)]
+        # print(f"initialized max_depth: {self.max_depth}")
 
     def required_depth_for_statement(self, statement_type: str) -> int:
         if statement_type == 'assign':
@@ -42,17 +43,39 @@ class MiniLangGP:
         else:
             return 1
 
-    def generate_initial_population(self, population_size: int):
+    # def generate_initial_population(self, population_size: int):
+    #
+    #     population = []
+    #     half_pop = population_size // 2
+    #
+    #     for _ in range(half_pop):
+    #         population.append(self.generate_random_program())
+    #
+    #     for _ in range(population_size - half_pop):
+    #         population.append(self.generate_random_program_full())
+    #
+    #     return population
 
+    def generate_initial_population(self, population_size: int):
         population = []
         half_pop = population_size // 2
+        primary = self.max_depth
 
-        for _ in range(half_pop):
+        depths = [i for i in range(2, self.max_depth+1)]
+        for i in range(half_pop):
+            depth = depths[i % len(depths)]
+            self.max_depth = depth
+            # print(f"Generating with depth: {depth}")
             population.append(self.generate_random_program())
 
-        for _ in range(population_size - half_pop):
+        for i in range(population_size - len(population)):
+            depth = depths[i % len(depths)]
+            self.max_depth = depth
+            # print(f"Generating full-depth program with max depth: {self.max_depth}")
             population.append(self.generate_random_program_full())
 
+        self.max_depth = primary
+        # print(f"Generated {len(population)} programs with last depth: {self.max_depth}")
         return population
 
     # grow tree generation
@@ -74,7 +97,7 @@ class MiniLangGP:
         if not possible_statements:
             return self.generate_assignment(depth)
 
-        possible_statements = ['assign'] * 2 + ['while'] + ['if'] + ['io'] * 3
+        # possible_statements = ['assign'] * 2 + ['while'] + ['if'] + ['io'] * 3
         statement_type = random.choice(possible_statements)
 
         if statement_type == 'assign':
@@ -175,7 +198,7 @@ class MiniLangGP:
             return self.generate_terminal_node()
 
         program = Node('program', '')
-        num_statements = random.randint(3, 6)
+        num_statements = random.randint(5, 12)
 
         for _ in range(num_statements):
             program.children.append(self.generate_random_statement_full(depth + 1))
@@ -210,7 +233,10 @@ class MiniLangGP:
         return node
 
     def generate_io_full(self, depth: int):
-        io_type = random.choice(['input', 'output'])
+        if depth + 1 == self.max_depth:
+            io_type = random.choice(['input', 'output'])
+        else:
+            io_type = 'output'
         node = Node('ioStatement', io_type)
         if io_type == 'input':
             node.children = [Node('ID', random.choice(self.variables))]
@@ -248,8 +274,8 @@ class MiniLangGP:
             return Node('ID', random.choice(self.variables))
 
     def generate_random_statement_full(self, depth: int):
-        if depth >= self.max_depth:
-            return self.generate_assignment_full(depth)
+        # if depth >= self.max_depth:
+        #     return self.generate_assignment_full(depth)
 
         possible_statements = []
         for st in self.statement_types:
@@ -262,6 +288,9 @@ class MiniLangGP:
 
         if not possible_statements:
             return self.generate_assignment_full(depth)
+
+        if depth + 1 != self.max_depth and 'assign' in possible_statements:
+            possible_statements.remove('assign')
 
         deeper_statements = [st for st in possible_statements if self.required_depth_for_statement(st) > 0]
         statement_type = random.choice(deeper_statements if deeper_statements else possible_statements)

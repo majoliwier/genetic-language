@@ -331,49 +331,24 @@ class MiniLangGP:
         offspring1 = copy.deepcopy(parent1)
         offspring2 = copy.deepcopy(parent2)
 
-        nodes1_by_depth = self._get_nodes_by_depth(offspring1)
-        nodes2_by_depth = self._get_nodes_by_depth(offspring2)
+        nodes1 = self._get_all_nodes(offspring1)
+        nodes2 = self._get_all_nodes(offspring2)
 
-        for depth in sorted(nodes1_by_depth.keys()):
-            if depth in nodes2_by_depth:
-                nodes1 = nodes1_by_depth[depth]
-                nodes2 = nodes2_by_depth[depth]
+        compatible_pairs = [
+            (n1, n2) for n1 in nodes1 for n2 in nodes2
+            if self.can_swap_nodes(n1, n2)
+        ]
 
-                compatible_pairs = [
-                    (n1, n2) for n1 in nodes1 for n2 in nodes2
-                    if self.can_swap_nodes(n1, n2)
-                ]
+        if compatible_pairs:
+            node1, node2 = random.choice(compatible_pairs)
+            parent1_node, index1 = self._find_parent(offspring1, node1)
+            parent2_node, index2 = self._find_parent(offspring2, node2)
 
-                if compatible_pairs:
-                    node1, node2 = random.choice(compatible_pairs)
-                    parent1_node, index1 = self._find_parent(offspring1, node1)
-                    parent2_node, index2 = self._find_parent(offspring2, node2)
-
-                    if parent1_node is not None and parent2_node is not None:
-                        if node1.type == 'ioStatement' and node1.value == 'input':
-                            if node2.type == 'ioStatement' and node2.value == 'input':
-                                parent1_node.children[index1], parent2_node.children[index2] = \
-                                    parent2_node.children[index2], parent1_node.children[index1]
-                        else:
-                            parent1_node.children[index1], parent2_node.children[index2] = \
-                                parent2_node.children[index2], parent1_node.children[index1]
-                    break
+            if parent1_node is not None and parent2_node is not None:
+                parent1_node.children[index1], parent2_node.children[index2] = \
+                    parent2_node.children[index2], parent1_node.children[index1]
 
         return offspring1, offspring2
-
-    def _get_nodes_by_depth(self, node: Node, depth: int = 0, nodes_by_depth: Optional[dict] = None) -> dict:
-        if nodes_by_depth is None:
-            nodes_by_depth = {}
-
-        if depth not in nodes_by_depth:
-            nodes_by_depth[depth] = []
-
-        nodes_by_depth[depth].append(node)
-
-        for child in node.children:
-            self._get_nodes_by_depth(child, depth + 1, nodes_by_depth)
-
-        return nodes_by_depth
 
     def _find_parent(self, node: Node, target: Node) -> Tuple[Optional[Node], int]:
         for i, child in enumerate(node.children):

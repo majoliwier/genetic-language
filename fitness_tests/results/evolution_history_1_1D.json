@@ -1,0 +1,20 @@
+{
+  "test_name": "1_1D",
+  "target_number": 1,
+  "found_generation": 1,
+  "best_program_code": "var_2 = (var_2 <= 75951.75);\nvar_1 = (83425.70 == 29289.18);\noutput((73815 || 94427));\nvar_8 = 66231.17;\nvar_0 = (46267.96 - 84150.61);\ninput(var_5);\n",
+  "best_program_serial": "{\"type\": \"program\", \"value\": \"\", \"children\": [{\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_2\", \"children\": []}, {\"type\": \"expression\", \"value\": \"<=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_2\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"75951.75\", \"children\": []}]}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_1\", \"children\": []}, {\"type\": \"expression\", \"value\": \"==\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"83425.70\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"29289.18\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"||\", \"children\": [{\"type\": \"INT\", \"value\": \"73815\", \"children\": []}, {\"type\": \"INT\", \"value\": \"94427\", \"children\": []}]}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_8\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"66231.17\", \"children\": []}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_0\", \"children\": []}, {\"type\": \"expression\", \"value\": \"-\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"46267.96\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"84150.61\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_5\", \"children\": []}]}]}",
+  "best_fitness": 1.0,
+  "evolution_history": [
+    {
+      "generation": 0,
+      "best_fitness": 1.0,
+      "avg_fitness": 0.3393485537159131
+    },
+    {
+      "generation": 1,
+      "best_fitness": 1.0,
+      "avg_fitness": 0.6990290057285369
+    }
+  ]
+}

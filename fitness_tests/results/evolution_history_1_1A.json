@@ -1,0 +1,20 @@
+{
+  "test_name": "1_1A",
+  "target_number": 1,
+  "found_generation": 1,
+  "best_program_code": "var_6 = 69751;\ninput(var_1);\nvar_2 = 8839.59;\nvar_5 = 17062;\noutput((27595.10 && 88233));\nvar_6 = (var_3 < 51316);\noutput((95173.06 >= 52409));\noutput((84605.10 <= 15679.52));\n",
+  "best_program_serial": "{\"type\": \"program\", \"value\": \"\", \"children\": [{\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_6\", \"children\": []}, {\"type\": \"INT\", \"value\": \"69751\", \"children\": []}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_1\", \"children\": []}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_2\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"8839.59\", \"children\": []}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_5\", \"children\": []}, {\"type\": \"INT\", \"value\": \"17062\", \"children\": []}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"&&\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"27595.10\", \"children\": []}, {\"type\": \"INT\", \"value\": \"88233\", \"children\": []}]}]}, {\"type\": \"assignStatement\", \"value\": \"=\", \"children\": [{\"type\": \"ID\", \"value\": \"var_6\", \"children\": []}, {\"type\": \"expression\", \"value\": \"<\", \"children\": [{\"type\": \"ID\", \"value\": \"var_3\", \"children\": []}, {\"type\": \"INT\", \"value\": \"51316\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \">=\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"95173.06\", \"children\": []}, {\"type\": \"INT\", \"value\": \"52409\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"<=\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"84605.10\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"15679.52\", \"children\": []}]}]}]}",
+  "best_fitness": 1.0,
+  "evolution_history": [
+    {
+      "generation": 0,
+      "best_fitness": 1.0,
+      "avg_fitness": 0.7254054075346895
+    },
+    {
+      "generation": 1,
+      "best_fitness": 1.0,
+      "avg_fitness": 0.9866656772564356
+    }
+  ]
+}

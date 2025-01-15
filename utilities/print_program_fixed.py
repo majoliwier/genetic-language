@@ -3,7 +3,7 @@ from AST.minilang_gp import MiniLangGP, generate_code
 
 
 def main():
-    path = "../example_system_tests/test_results/1_1_A.json"
+    path = "/Users/amika/Documents/projects-uni/genetic-language/fitness_tests/results/evolution_history_1_2A.json"
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -14,7 +14,7 @@ def main():
 
     gp = MiniLangGP(max_depth=5)
 
-    best_program_serial = data.get("best_program")
+    best_program_serial = data.get("best_program_serial")
     if not best_program_serial:
         print("Brak klucza 'best_program' w JSON.")
         return

@@ -1,0 +1,65 @@
+{
+  "test_name": "1_2A",
+  "target_number": null,
+  "found_generation": null,
+  "best_program_code": "output((69619.48 / 22839.61));\noutput((25101.67 / 22839.61));\noutput((var_2 - 9675.95));\noutput((25101.67 / 22839.61));\noutput((86122.77 != 84643));\noutput((81975.51 / 17570));\ninput(var_7);\n",
+  "best_program_serial": "{\"type\": \"program\", \"value\": \"\", \"children\": [{\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"/\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"69619.48\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"22839.61\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"/\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"25101.67\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"22839.61\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"-\", \"children\": [{\"type\": \"ID\", \"value\": \"var_2\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"9675.95\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"/\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"25101.67\", \"children\": []}, {\"type\": \"FLOAT\", \"value\": \"22839.61\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"!=\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"86122.77\", \"children\": []}, {\"type\": \"INT\", \"value\": \"84643\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"output\", \"children\": [{\"type\": \"expression\", \"value\": \"/\", \"children\": [{\"type\": \"FLOAT\", \"value\": \"81975.51\", \"children\": []}, {\"type\": \"INT\", \"value\": \"17570\", \"children\": []}]}]}, {\"type\": \"ioStatement\", \"value\": \"input\", \"children\": [{\"type\": \"ID\", \"value\": \"var_7\", \"children\": []}]}]}",
+  "best_fitness": 0.20729498299066196,
+  "evolution_history": [
+    {
+      "generation": 0,
+      "best_fitness": 0.15554381639960083,
+      "avg_fitness": 0.03809986986677423
+    },
+    {
+      "generation": 1,
+      "best_fitness": 0.18026604296681448,
+      "avg_fitness": 0.08962798500443483
+    },
+    {
+      "generation": 2,
+      "best_fitness": 0.17791474789863995,
+      "avg_fitness": 0.10941641215566697
+    },
+    {
+      "generation": 3,
+      "best_fitness": 0.18642652949041155,
+      "avg_fitness": 0.1272979781674689
+    },
+    {
+      "generation": 4,
+      "best_fitness": 0.1870082919242479,
+      "avg_fitness": 0.14926280064109826
+    },
+    {
+      "generation": 5,
+      "best_fitness": 0.1951583772433202,
+      "avg_fitness": 0.1547790491790954
+    },
+    {
+      "generation": 6,
+      "best_fitness": 0.198123513901683,
+      "avg_fitness": 0.15702100923773452
+    },
+    {
+      "generation": 7,
+      "best_fitness": 0.19227843468702427,
+      "avg_fitness": 0.1587465542146679
+    },
+    {
+      "generation": 8,
+      "best_fitness": 0.20729498299066196,
+      "avg_fitness": 0.15852290071804498
+    },
+    {
+      "generation": 9,
+      "best_fitness": 0.1902096624923645,
+      "avg_fitness": 0.1617366860823464
+    },
+    {
+      "generation": 10,
+      "best_fitness": 0.19502764530747269,
+      "avg_fitness": 0.1576838371633768
+    }
+  ]
+}

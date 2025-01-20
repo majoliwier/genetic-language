@@ -14,7 +14,11 @@ from fitness_functions import (
     fitness_1_3_A,
     fitness_1_3_B,
     fitness_1_4_A,
-    fitness_1_4_B
+    fitness_1_4_B,
+    fitness_benchmark_1,
+    fitness_benchmark_17,
+    fitness_benchmark_28,
+    fitness_symbolic_regression
 )
 import random
 import json
@@ -24,7 +28,6 @@ from utilities.graph import draw_tree_to_file
 
 def run_gp_test(gp, fitness_func, task_name, population_size=100, generations=100, tournament_size=3,
                 stagnation_threshold=10, initial_mutation_prob=0.2, high_mutation_prob=0.5):
-
     population = gp.generate_initial_population(population_size)
     elite_size = int(population_size * 0.1)
 
@@ -152,15 +155,19 @@ def main():
         # "1.1.D": fitness_1_1_D,
         # "1.1.E": fitness_1_1_E,
         # "1.1.F": fitness_1_1_F,
-        "1.2.A": fitness_1_2_A,
+        # "1.2.A": fitness_1_2_A,
         # "1.2.B": fitness_1_2_B,
-        # "1.2.C": fitness_1_2_C,
+        "1.2.C": fitness_1_2_C,
         # "1.2.D": fitness_1_2_D,
         # "1.2.E": fitness_1_2_E,
         # "1.3.A": fitness_1_3_A,
         # "1.3.B": fitness_1_3_B,
         # "1.4.A": fitness_1_4_A,
-        # "1.4.B": fitness_1_4_B
+        # "1.4.B": fitness_1_4_B,
+        # "benchmark_1": fitness_benchmark_1,
+        # "benchmark_17": fitness_benchmark_17,
+        # "benchmark_28": fitness_benchmark_28,
+        # "symbolic_regression": fitness_symbolic_regression
     }
 
     results_summary = {}
@@ -173,7 +180,7 @@ def main():
             task_name=task_name,
             population_size=1000,
             generations=150,
-            tournament_size=3,
+            tournament_size=4,
             initial_mutation_prob=0.2,
             high_mutation_prob=0.6
         )

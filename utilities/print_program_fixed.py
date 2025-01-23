@@ -3,7 +3,7 @@ from AST.minilang_gp import MiniLangGP, generate_code
 
 
 def main():
-    path = "../example_system_tests/test_results/1_1_A.json"
+    path = "../example_system_tests/test_results/1_3_A1.json"
 
     try:
         with open(path, 'r', encoding='utf-8') as f:
@@ -18,6 +18,9 @@ def main():
     if not best_program_serial:
         print("Brak klucza 'best_program' w JSON.")
         return
+
+    print("Best program:\n")
+    print(best_program_serial)
 
     try:
         program_node = gp.deserialize(best_program_serial)

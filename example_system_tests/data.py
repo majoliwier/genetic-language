@@ -1,6 +1,7 @@
 import json
 import random
 
+
 def generate_test_data(count, value_range, operation="multiply"):
     test_data = {"inputs": [], "expected_outputs": []}
 
@@ -25,12 +26,12 @@ def generate_test_data(count, value_range, operation="multiply"):
             elif operation == "bigger":
                 result = var_0 if var_0 > var_1 else var_1
 
-
             test_data["inputs"].append({"var_0": var_0, "var_1": var_1})
 
         test_data["expected_outputs"].append(result)
 
     return json.dumps(test_data, separators=(",", ":"))
+
 
 if __name__ == "__main__":
     count = 100

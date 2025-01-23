@@ -61,7 +61,7 @@ class MiniLangGP:
         half_pop = population_size // 2
         primary = self.max_depth
 
-        depths = [i for i in range(2, self.max_depth+1)]
+        depths = [i for i in range(2, self.max_depth + 1)]
         for i in range(half_pop):
             depth = depths[i % len(depths)]
             self.max_depth = depth

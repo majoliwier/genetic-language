@@ -36,16 +36,12 @@ def evaluate_output_position(output, target, desired_position=None):
     if not output:
         return 0.0
 
-    # Jeśli celowa wartość jest dokładnie na żądanej pozycji
     if desired_position is not None and desired_position < len(output) and output[desired_position] == target:
         return 1.0
 
-    # Jeśli celowa wartość występuje gdziekolwiek w output
     if target in output:
         return 0.5
 
-    # Jeśli nie znaleziono targetu, można zwrócić część podobieństwa
-    # (opcjonalnie, zależy od preferowanej logiki)
     if desired_position is not None and desired_position < len(output):
         similarity = calculate_numeric_similarity(output[desired_position], target)
         return similarity * 0.5
@@ -1072,17 +1068,13 @@ def fitness_benchmark_1(program):
         interpreter.execute_program(program)
         output = interpreter.output_buffer
 
-        # Sprawdzamy, czy program wypisał dokładnie jedną liczbę
         length_score = evaluate_output_length(output, desired_length=1)
-        # Możemy dodać karę np. 10 * (1 - length_score) za złe rozmiary
         total_error += (1.0 - length_score) * 10
 
-        # Jeśli faktycznie coś wypisano, bierzemy ostatnią wartość i porównujemy
         if output:
             actual_output = float(output[-1])
             total_error += abs(actual_output - expected_output)
         else:
-            # Jeśli nie było żadnego outputu, to błąd nieskończony
             total_error += float('inf')
 
     return 1.0 / (1.0 + total_error)
@@ -1194,7 +1186,7 @@ def fitness_benchmark_28(program):
             {"var_0": 999, "var_1": 1000, "var_2": 1001, "var_3": 998},
         ],
         "expected_outputs": [
-            2,  # smallest of [3,7,2,5]
+            2,  # [3,7,2,5]
             5,  # [10,15,5,20]
             -4,  # [-1,-2,-3,-4]
             0,  # [0,0,0,0]
@@ -1243,16 +1235,10 @@ def fitness_symbolic_regression(program):
     W tym przypadku test_data zawiera wszystkie możliwe wejścia: (0,0), (0,1), (1,0), (1,1).
     Można zmienić te dane, jeśli chcemy testować inne funkcje (OR, AND, random itp.) lub większe k.
     """
-    # 1) Wygenerujmy wszystkie kombinacje 6-bitowe:
-    #    inputy: var_0..var_5
-    #    expected_output: parzystość (0/1)
     all_inputs = []
     all_outputs = []
     for i in range(64):
-        # i to liczba od 0 do 63, dekodujemy do 6 bitów
         bits = [(i >> b) & 1 for b in range(6)]  # b=0..5
-        # UWAGA: powyższa linijka generuje bits w kolejności b=0..5,
-        # co oznacza bits[0] = najmłodszy bit. Możemy odwrócić kolejność, jeśli chcemy.
         d0, d1, d2, d3, d4, d5 = bits
         all_inputs.append({
             "var_0": d0,
@@ -1262,8 +1248,6 @@ def fitness_symbolic_regression(program):
             "var_4": d4,
             "var_5": d5,
         })
-        # Parity (XOR) => 1 jeśli liczba jedynek jest nieparzysta
-        # Najprościej: sum(bits) % 2
         value = sum(bits) % 2
         all_outputs.append(value)
 
@@ -1279,15 +1263,11 @@ def fitness_symbolic_regression(program):
         interpreter.execute_program(program)
         output = interpreter.output_buffer
 
-        # Podobnie jak w innych fitnessach: chcemy tylko 1 wartość wyjściową
         length_score = evaluate_output_length(output, desired_length=1)
         total_error += (1.0 - length_score) * 10
 
         if output:
-            # Interpretujemy output jako float, ale spodziewamy się 0 lub 1,
-            # ewentualnie program może wypisać coś zbliżonego do 0/1
             actual_output = float(output[-1])
-            # Błąd to różnica bezwzględna. Gdy program daje 0.9 zamiast 1, błąd = 0.1
             total_error += abs(actual_output - expected_output)
         else:
             total_error += float('inf')

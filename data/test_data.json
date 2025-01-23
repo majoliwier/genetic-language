@@ -1,6 +1,11 @@
 {
-    "inputs": [
-        {"var_0": 10, "var_1": 20}
-    ],
-    "expected_outputs": [30]
+  "inputs": [
+    {
+      "var_0": 10,
+      "var_1": 20
+    }
+  ],
+  "expected_outputs": [
+    30
+  ]
 }
